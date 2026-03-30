@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>C² Woodworks Flag Builder</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<style>
+body {
+  margin: 0;
+  font-family: Arial;
+  background: #111;
+  color: white;
+  text-align: center;
+}
+
+.container {
+  max-width: 1000px;
+  margin: auto;
+  padding: 20px;
+}
+
+.controls {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+canvas {
+  border: 2px solid #444;
+  margin-top: 20px;
+}
+
+button {
+  padding: 10px 15px;
+  background: #c19a6b;
+  border: none;
+  font-weight: bold;
+  cursor: pointer;
+}
+</style>
+</head>
+
+<body>
+
+<h1>C² Woodworks Flag Builder</h1>
+
+<div class="container">
+
+<div class="controls">
+  <p><b>Stripe Colors:</b></p>
+</div>
+
+<div id="stripeControls" class="controls"></div>
+
+<div class="controls">
+  <p><b>Union:</b></p>
+  <input type="color" id="unionColor" value="#3C3B6E">
+  <input type="file" id="unionImage">
+</div>
+
+<div class="controls">
+  <p><b>Stars Color:</b></p>
+  <input type="color" id="starColor" value="#FFFFFF">
+</div>
+
+<div class="controls">
+  <p><b>Texture:</b></p>
+  <select id="texture">
+    <option value="none">None</option>
+    <option value="wood">Wood</option>
+    <option value="burnt">Burnt Wood</option>
+  </select>
+
+  <p><b>Stars:</b></p>
+  <input type="checkbox" id="starsToggle" checked>
+</div>
+
+<div class="controls">
+  <button onclick="drawFlag()">Update</button>
+  <button onclick="download()">Download</button>
+</div>
+
+<canvas id="canvas" width="900" height="500"></canvas>
+
+</div>
+
+<script>
+
+const stripeControls = document.getElementById("stripeControls");
+
+for (let i = 0; i < 13; i++) {
+  const input = document.createElement("input");
+  input.type = "color";
+  input.value = i % 2 === 0 ? "#B22234" : "#FFFFFF";
+  input.id = "stripe" + i;
+  stripeControls.appendChild(input);
+}
+
+let unionImg = null;
+
+document.getElementById("unionImage").addEventListener("change", function(e) {
+  const file = e.target.files[0];
+  const reader = new FileReader();
+
+  reader.onload = function(event) {
+    unionImg = new Image();
+    unionImg.src = event.target.result;
+    unionImg.onload = drawFlag;
+  };
+
+  if (file) reader.readAsDataURL(file);
+});
+
+function drawStars(ctx, width, height) {
+  const starColor = document.getElementById("starColor").value;
+  ctx.fillStyle = starColor;
+
+  for (let y = 10; y < height; y += 25) {
+    for (let x = 10; x < width; x += 25) {
+      ctx.beginPath();
+      ctx.arc(x, y, 3, 0, Math.PI * 2);
+      ctx.fill();
+    }
+  }
+}
+
+function drawFlag() {
+  const canvas = document.getElementById("canvas");
+  const ctx = canvas.getContext("2d");
+
+  const stripeHeight = canvas.height / 13;
+  const texture = document.getElementById("texture").value;
+  const showStars = document.getElementById("starsToggle").checked;
+
+  // STRIPES
+  for (let i = 0; i < 13; i++) {
+    const color = document.getElementById("stripe" + i).value;
+    ctx.fillStyle = color;
+    ctx.fillRect(0, i * stripeHeight, canvas.width, stripeHeight);
+  }
+
+  const unionWidth = canvas.width * 0.4;
+  const unionHeight = stripeHeight * 7;
+
+  // UNION BASE
+  const unionColor = document.getElementById("unionColor").value;
+  ctx.fillStyle = unionColor;
+  ctx.fillRect(0, 0, unionWidth, unionHeight);
+
+  // TEXTURE
+  if (texture === "wood") {
+    ctx.fillStyle = "rgba(139,69,19,0.3)";
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+  }
+
+  if (texture === "burnt") {
+    ctx.fillStyle = "rgba(0,0,0,0.5)";
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+  }
+
+  // UNION IMAGE
+  if (unionImg) {
+    ctx.drawImage(unionImg, 0, 0, unionWidth, unionHeight);
+  }
+
+  // STARS
+  if (showStars && !unionImg) {
+    drawStars(ctx, unionWidth, unionHeight);
+  }
+}
+
+function download() {
+  const canvas = document.getElementById("canvas");
+  const link = document.createElement("a");
+  link.download = "custom_flag.png";
+  link.href = canvas.toDataURL();
+  link.click();
+}
+
+drawFlag();
+
+</script>
+
+</body>
+</html>
