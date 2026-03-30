@@ -2,36 +2,20 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>C² Woodworks - Custom Flag Builder</title>
+<title>C² Woodworks Flag Builder</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <style>
 body {
   margin: 0;
-  font-family: Arial, sans-serif;
+  font-family: Arial;
   background: #111;
   color: white;
-}
-
-header {
-  background: linear-gradient(to right, #000, #222);
-  padding: 20px;
   text-align: center;
-  font-size: 28px;
-  letter-spacing: 2px;
-}
-
-.hero {
-  text-align: center;
-  padding: 40px 20px;
-}
-
-.hero h1 {
-  font-size: 40px;
 }
 
 .container {
-  max-width: 900px;
+  max-width: 1000px;
   margin: auto;
   padding: 20px;
 }
@@ -39,57 +23,59 @@ header {
 .controls {
   display: flex;
   flex-wrap: wrap;
-  gap: 15px;
   justify-content: center;
+  gap: 10px;
   margin-bottom: 20px;
 }
 
+canvas {
+  border: 2px solid #444;
+  margin-top: 20px;
+}
+
 button {
+  padding: 10px 15px;
   background: #c19a6b;
   border: none;
-  padding: 10px 20px;
-  color: black;
-  cursor: pointer;
   font-weight: bold;
-}
-
-button:hover {
-  background: #a67c52;
-}
-
-canvas {
-  display: block;
-  margin: auto;
-  border: 2px solid #444;
-  background: #222;
-}
-
-footer {
-  text-align: center;
-  padding: 20px;
-  font-size: 14px;
-  color: #aaa;
+  cursor: pointer;
 }
 </style>
 </head>
 
 <body>
 
-<header>
-C² WOODWORKS
-</header>
-
-<div class="hero">
-  <h1>Custom American Flag Builder</h1>
-  <p>Design your flag before we build it 🔥</p>
-</div>
+<h1>C² Woodworks Flag Builder</h1>
 
 <div class="container">
 
 <div class="controls">
-  <label>Stripe Color <input type="color" id="stripeColor" value="#B22234"></label>
-  <label>Union Color <input type="color" id="unionColor" value="#3C3B6E"></label>
-  <label>Star Color <input type="color" id="starColor" value="#FFFFFF"></label>
+  <p><b>Stripe Colors:</b></p>
+</div>
+
+<div id="stripeControls" class="controls"></div>
+
+<div class="controls">
+  <p><b>Union:</b></p>
+  <input type="color" id="unionColor" value="#3C3B6E">
+  <input type="file" id="unionImage">
+</div>
+
+<div class="controls">
+  <p><b>Stars Color:</b></p>
+  <input type="color" id="starColor" value="#FFFFFF">
+</div>
+
+<div class="controls">
+  <p><b>Texture:</b></p>
+  <select id="texture">
+    <option value="none">None</option>
+    <option value="wood">Wood</option>
+    <option value="burnt">Burnt Wood</option>
+  </select>
+
+  <p><b>Stars:</b></p>
+  <input type="checkbox" id="starsToggle" checked>
 </div>
 
 <div class="controls">
@@ -97,52 +83,105 @@ C² WOODWORKS
   <button onclick="download()">Download</button>
 </div>
 
-<canvas id="flagCanvas" width="800" height="420"></canvas>
+<canvas id="canvas" width="900" height="500"></canvas>
 
 </div>
 
-<footer>
-Handcrafted American Flags | Built Not Bought 🇺🇸
-</footer>
-
 <script>
-function drawFlag() {
-  const canvas = document.getElementById("flagCanvas");
-  const ctx = canvas.getContext("2d");
 
-  const stripeColor = document.getElementById("stripeColor").value;
-  const unionColor = document.getElementById("unionColor").value;
+const stripeControls = document.getElementById("stripeControls");
+
+for (let i = 0; i < 13; i++) {
+  const input = document.createElement("input");
+  input.type = "color";
+  input.value = i % 2 === 0 ? "#B22234" : "#FFFFFF";
+  input.id = "stripe" + i;
+  stripeControls.appendChild(input);
+}
+
+let unionImg = null;
+
+document.getElementById("unionImage").addEventListener("change", function(e) {
+  const file = e.target.files[0];
+  const reader = new FileReader();
+
+  reader.onload = function(event) {
+    unionImg = new Image();
+    unionImg.src = event.target.result;
+    unionImg.onload = drawFlag;
+  };
+
+  if (file) reader.readAsDataURL(file);
+});
+
+function drawStars(ctx, width, height) {
   const starColor = document.getElementById("starColor").value;
-
-  const stripeHeight = canvas.height / 13;
-
-  for (let i = 0; i < 13; i++) {
-    ctx.fillStyle = i % 2 === 0 ? stripeColor : "#fff";
-    ctx.fillRect(0, i * stripeHeight, canvas.width, stripeHeight);
-  }
-
-  ctx.fillStyle = unionColor;
-  ctx.fillRect(0, 0, canvas.width * 0.4, stripeHeight * 7);
-
   ctx.fillStyle = starColor;
-  for (let y = 15; y < stripeHeight * 7; y += 25) {
-    for (let x = 15; x < canvas.width * 0.4; x += 25) {
+
+  for (let y = 10; y < height; y += 25) {
+    for (let x = 10; x < width; x += 25) {
       ctx.beginPath();
-      ctx.arc(x, y, 4, 0, Math.PI * 2);
+      ctx.arc(x, y, 3, 0, Math.PI * 2);
       ctx.fill();
     }
   }
 }
 
+function drawFlag() {
+  const canvas = document.getElementById("canvas");
+  const ctx = canvas.getContext("2d");
+
+  const stripeHeight = canvas.height / 13;
+  const texture = document.getElementById("texture").value;
+  const showStars = document.getElementById("starsToggle").checked;
+
+  // STRIPES
+  for (let i = 0; i < 13; i++) {
+    const color = document.getElementById("stripe" + i).value;
+    ctx.fillStyle = color;
+    ctx.fillRect(0, i * stripeHeight, canvas.width, stripeHeight);
+  }
+
+  const unionWidth = canvas.width * 0.4;
+  const unionHeight = stripeHeight * 7;
+
+  // UNION BASE
+  const unionColor = document.getElementById("unionColor").value;
+  ctx.fillStyle = unionColor;
+  ctx.fillRect(0, 0, unionWidth, unionHeight);
+
+  // TEXTURE
+  if (texture === "wood") {
+    ctx.fillStyle = "rgba(139,69,19,0.3)";
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+  }
+
+  if (texture === "burnt") {
+    ctx.fillStyle = "rgba(0,0,0,0.5)";
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+  }
+
+  // UNION IMAGE
+  if (unionImg) {
+    ctx.drawImage(unionImg, 0, 0, unionWidth, unionHeight);
+  }
+
+  // STARS
+  if (showStars && !unionImg) {
+    drawStars(ctx, unionWidth, unionHeight);
+  }
+}
+
 function download() {
-  const canvas = document.getElementById("flagCanvas");
+  const canvas = document.getElementById("canvas");
   const link = document.createElement("a");
-  link.download = "C2_Custom_Flag.png";
+  link.download = "custom_flag.png";
   link.href = canvas.toDataURL();
   link.click();
 }
 
 drawFlag();
+
 </script>
 
 </body>
