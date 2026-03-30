@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>C² Woodworks - Custom Flag Builder</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<style>
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  background: #111;
+  color: white;
+}
+
+header {
+  background: linear-gradient(to right, #000, #222);
+  padding: 20px;
+  text-align: center;
+  font-size: 28px;
+  letter-spacing: 2px;
+}
+
+.hero {
+  text-align: center;
+  padding: 40px 20px;
+}
+
+.hero h1 {
+  font-size: 40px;
+}
+
+.container {
+  max-width: 900px;
+  margin: auto;
+  padding: 20px;
+}
+
+.controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 15px;
+  justify-content: center;
+  margin-bottom: 20px;
+}
+
+button {
+  background: #c19a6b;
+  border: none;
+  padding: 10px 20px;
+  color: black;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+button:hover {
+  background: #a67c52;
+}
+
+canvas {
+  display: block;
+  margin: auto;
+  border: 2px solid #444;
+  background: #222;
+}
+
+footer {
+  text-align: center;
+  padding: 20px;
+  font-size: 14px;
+  color: #aaa;
+}
+</style>
+</head>
+
+<body>
+
+<header>
+C² WOODWORKS
+</header>
+
+<div class="hero">
+  <h1>Custom American Flag Builder</h1>
+  <p>Design your flag before we build it 🔥</p>
+</div>
+
+<div class="container">
+
+<div class="controls">
+  <label>Stripe Color <input type="color" id="stripeColor" value="#B22234"></label>
+  <label>Union Color <input type="color" id="unionColor" value="#3C3B6E"></label>
+  <label>Star Color <input type="color" id="starColor" value="#FFFFFF"></label>
+</div>
+
+<div class="controls">
+  <button onclick="drawFlag()">Update</button>
+  <button onclick="download()">Download</button>
+</div>
+
+<canvas id="flagCanvas" width="800" height="420"></canvas>
+
+</div>
+
+<footer>
+Handcrafted American Flags | Built Not Bought 🇺🇸
+</footer>
+
+<script>
+function drawFlag() {
+  const canvas = document.getElementById("flagCanvas");
+  const ctx = canvas.getContext("2d");
+
+  const stripeColor = document.getElementById("stripeColor").value;
+  const unionColor = document.getElementById("unionColor").value;
+  const starColor = document.getElementById("starColor").value;
+
+  const stripeHeight = canvas.height / 13;
+
+  for (let i = 0; i < 13; i++) {
+    ctx.fillStyle = i % 2 === 0 ? stripeColor : "#fff";
+    ctx.fillRect(0, i * stripeHeight, canvas.width, stripeHeight);
+  }
+
+  ctx.fillStyle = unionColor;
+  ctx.fillRect(0, 0, canvas.width * 0.4, stripeHeight * 7);
+
+  ctx.fillStyle = starColor;
+  for (let y = 15; y < stripeHeight * 7; y += 25) {
+    for (let x = 15; x < canvas.width * 0.4; x += 25) {
+      ctx.beginPath();
+      ctx.arc(x, y, 4, 0, Math.PI * 2);
+      ctx.fill();
+    }
+  }
+}
+
+function download() {
+  const canvas = document.getElementById("flagCanvas");
+  const link = document.createElement("a");
+  link.download = "C2_Custom_Flag.png";
+  link.href = canvas.toDataURL();
+  link.click();
+}
+
+drawFlag();
+</script>
+
+</body>
+</html>
